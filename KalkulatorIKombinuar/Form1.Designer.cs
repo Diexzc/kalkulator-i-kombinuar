@@ -23,6 +23,7 @@ partial class Form1
     private TableLayoutPanel historyLayout = null!;
     private Label lblHistoryTitle = null!;
     private Label lblHistoryHint = null!;
+    private Label lblCopyright = null!;
     private ListBox lstHistory = null!;
     private Button btnClearHistory = null!;
     private Button btnDecimal = null!;
@@ -57,6 +58,7 @@ partial class Form1
         historyLayout = new TableLayoutPanel();
         lblHistoryTitle = new Label();
         lblHistoryHint = new Label();
+        lblCopyright = new Label();
         lstHistory = new ListBox();
         btnClearHistory = CreateButton("Pastro historikun", BtnClearHistory_Click, Color.FromArgb(52, 52, 52), 11F, SmallButtonHeight);
 
@@ -337,14 +339,16 @@ partial class Form1
         historyLayout.Controls.Add(lblHistoryHint, 0, 1);
         historyLayout.Controls.Add(lstHistory, 0, 2);
         historyLayout.Controls.Add(btnClearHistory, 0, 3);
+        historyLayout.Controls.Add(lblCopyright, 0, 4);
         historyLayout.Dock = DockStyle.Fill;
         historyLayout.Location = new Point(0, 18);
         historyLayout.Margin = new Padding(0);
         historyLayout.Name = "historyLayout";
-        historyLayout.RowCount = 4;
+        historyLayout.RowCount = 5;
         historyLayout.RowStyles.Add(new RowStyle());
         historyLayout.RowStyles.Add(new RowStyle());
         historyLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        historyLayout.RowStyles.Add(new RowStyle());
         historyLayout.RowStyles.Add(new RowStyle());
         historyLayout.Size = new Size(297, 744);
         historyLayout.TabIndex = 0;
@@ -390,6 +394,18 @@ partial class Form1
         btnClearHistory.Name = "btnClearHistory";
         btnClearHistory.TabIndex = 3;
 
+        lblCopyright.AutoSize = true;
+        lblCopyright.Dock = DockStyle.Fill;
+        lblCopyright.Font = new Font("Segoe UI", 9F, FontStyle.Italic, GraphicsUnit.Point);
+        lblCopyright.ForeColor = Color.DarkGray;
+        lblCopyright.Location = new Point(3, 711);
+        lblCopyright.Margin = new Padding(3, 10, 3, 0);
+        lblCopyright.Name = "lblCopyright";
+        lblCopyright.Size = new Size(291, 33);
+        lblCopyright.TabIndex = 4;
+        lblCopyright.Text = "Copyrights go to Diellart Zeka";
+        lblCopyright.TextAlign = ContentAlignment.MiddleCenter;
+
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
         BackColor = Color.FromArgb(24, 24, 24);
@@ -402,7 +418,6 @@ partial class Form1
         Name = "Form1";
         StartPosition = FormStartPosition.CenterScreen;
         Text = "Kalkulator i kombinuar";
-        KeyDown += Form1_KeyDown;
 
         historyLayout.ResumeLayout(false);
         historyLayout.PerformLayout();

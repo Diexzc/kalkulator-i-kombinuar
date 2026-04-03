@@ -4,6 +4,10 @@ namespace KalkulatorIKombinuar;
 
 public partial class Form1 : Form
 {
+    private const int StandardWidth = 1040;
+    private const int ScientificWidth = 1260;
+    private const int StandardMinimumWidth = 940;
+    private const int ScientificMinimumWidth = 1100;
     private readonly string _decimalSeparator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
 
     private double? _firstOperand;
@@ -28,6 +32,7 @@ public partial class Form1 : Form
         cmbMode.SelectedIndex = 0;
         UpdateMemoryIndicator();
         UpdateHistoryButtonState();
+        ApplyCalculatorMode(false);
     }
 
     private void DigitButton_Click(object? sender, EventArgs e)
@@ -142,92 +147,98 @@ public partial class Form1 : Form
     private void CmbMode_SelectedIndexChanged(object? sender, EventArgs e)
     {
         var scientificMode = string.Equals(cmbMode.SelectedItem?.ToString(), "Scientific", StringComparison.Ordinal);
-        scientificHost.Visible = scientificMode;
-        lblAngleMode.Visible = scientificMode;
+        ApplyCalculatorMode(scientificMode);
     }
 
-    private void Form1_KeyDown(object? sender, KeyEventArgs e)
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
     {
-        if (!e.Shift && e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9)
+        return HandleCalculatorKey(keyData) || base.ProcessCmdKey(ref msg, keyData);
+    }
+
+    private bool HandleCalculatorKey(Keys keyData)
+    {
+        var keyCode = keyData & Keys.KeyCode;
+        var modifiers = keyData & Keys.Modifiers;
+
+        if (modifiers == Keys.None && keyCode >= Keys.D0 && keyCode <= Keys.D9)
         {
-            InputDigit(((int)(e.KeyCode - Keys.D0)).ToString(CultureInfo.InvariantCulture));
-            MarkKeyAsHandled(e);
-            return;
+            InputDigit(((int)(keyCode - Keys.D0)).ToString(CultureInfo.InvariantCulture));
+            return true;
         }
 
-        if (e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9)
+        if (modifiers == Keys.None && keyCode >= Keys.NumPad0 && keyCode <= Keys.NumPad9)
         {
-            InputDigit(((int)(e.KeyCode - Keys.NumPad0)).ToString(CultureInfo.InvariantCulture));
-            MarkKeyAsHandled(e);
-            return;
+            InputDigit(((int)(keyCode - Keys.NumPad0)).ToString(CultureInfo.InvariantCulture));
+            return true;
         }
 
-        if (e.KeyCode == Keys.D8 && e.Shift)
+        if (modifiers == Keys.Shift && keyCode == Keys.D8)
         {
             SetPendingBinaryOperation("multiply");
-            MarkKeyAsHandled(e);
-            return;
+            return true;
         }
 
-        switch (e.KeyCode)
+        if (modifiers == Keys.Shift && keyCode == Keys.Oemplus)
         {
-            case Keys.Oemplus when e.Shift:
+            SetPendingBinaryOperation("add");
+            return true;
+        }
+
+        if (modifiers != Keys.None && modifiers != Keys.Shift)
+        {
+            return false;
+        }
+
+        switch (keyCode)
+        {
             case Keys.Add:
                 SetPendingBinaryOperation("add");
-                MarkKeyAsHandled(e);
-                break;
+                return true;
 
             case Keys.OemMinus:
             case Keys.Subtract:
                 SetPendingBinaryOperation("subtract");
-                MarkKeyAsHandled(e);
-                break;
+                return true;
+
+            case Keys.Multiply:
+                SetPendingBinaryOperation("multiply");
+                return true;
 
             case Keys.Divide:
             case Keys.OemQuestion:
                 SetPendingBinaryOperation("divide");
-                MarkKeyAsHandled(e);
-                break;
+                return true;
 
             case Keys.Decimal:
             case Keys.OemPeriod:
             case Keys.Oemcomma:
                 InputDecimal();
-                MarkKeyAsHandled(e);
-                break;
+                return true;
 
             case Keys.Enter:
-            case Keys.Oemplus:
+            case Keys.Oemplus when modifiers == Keys.None:
                 ExecuteEquals();
-                MarkKeyAsHandled(e);
-                break;
+                return true;
 
             case Keys.Back:
                 Backspace();
-                MarkKeyAsHandled(e);
-                break;
+                return true;
 
             case Keys.Delete:
                 ClearEntry();
-                MarkKeyAsHandled(e);
-                break;
+                return true;
 
             case Keys.Escape:
                 ClearAll();
-                MarkKeyAsHandled(e);
-                break;
+                return true;
 
             case Keys.F9:
                 ToggleSign();
-                MarkKeyAsHandled(e);
-                break;
-        }
-    }
+                return true;
 
-    private static void MarkKeyAsHandled(KeyEventArgs e)
-    {
-        e.Handled = true;
-        e.SuppressKeyPress = true;
+            default:
+                return false;
+        }
     }
 
     private void InputDigit(string digit)
@@ -558,6 +569,30 @@ public partial class Form1 : Form
     private void UpdateHistoryButtonState()
     {
         btnClearHistory.Enabled = lstHistory.Items.Count > 0;
+    }
+
+    private void ApplyCalculatorMode(bool scientificMode)
+    {
+        scientificHost.Visible = scientificMode;
+        scientificHost.Enabled = scientificMode;
+        lblAngleMode.Visible = scientificMode;
+
+        if (calculatorLayout.RowStyles.Count > 2)
+        {
+            calculatorLayout.RowStyles[2].SizeType = SizeType.Absolute;
+            calculatorLayout.RowStyles[2].Height = scientificMode ? 120F : 0F;
+        }
+
+        MinimumSize = new Size(scientificMode ? ScientificMinimumWidth : StandardMinimumWidth, 720);
+
+        if (WindowState == FormWindowState.Normal)
+        {
+            Width = scientificMode ? ScientificWidth : StandardWidth;
+        }
+
+        Text = scientificMode
+            ? "Kalkulator i kombinuar - Scientific"
+            : "Kalkulator i kombinuar - Standard";
     }
 
     private void AddHistoryEntry(string entry)
